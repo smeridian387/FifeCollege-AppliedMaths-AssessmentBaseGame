@@ -79,13 +79,43 @@ namespace Assessment
                 foreach (BasicEffect effect in mesh.Effects) // This loop then goes through every effect in each mesh.
                 {   
                     effect.World = transforms[mesh.ParentBone.Index]; // begin dealing with transforms to render the object into the game world
-                                                                      // The following effects allow the object to be drawn in the correct place, with the correct rotation and scale.
-                                                                      ///////////////////////////////////////////////////////////////////
-                                                                      //
+                     // The following effects allow the object to be drawn in the correct place, with the correct rotation and scale.
+                     ///////////////////////////////////////////////////////////////////
+                     //
+                     // CODE FOR TASK 1 SHOULD BE ENTERED HERE
+                     //
+                     ///////////////////////////////////////////////////////////////////
 
-                    // CODE FOR TASK 1 SHOULD BE ENTERED HERE
-                    //
-                    ///////////////////////////////////////////////////////////////////
+                    //WORLD MATRIX
+                    //transform from model space to world space in order - scale, rotation, translation
+                    //1.scale
+                    //scale our model by multiplaying the world matrix by a scale matrix
+                    //XNA does this for using CreateScale()
+                    effect.World *= Matrix.CreateScale(scale);
+                    //2. rotation
+                    // Rotate our model in the game world
+                    effect.World *= Matrix.CreateRotationX(rotation.X); // Rotate around the x axis
+                    effect.World *= Matrix.CreateRotationY(rotation.Y); // Rotate around the y axis
+                    effect.World *= Matrix.CreateRotationZ(rotation.Z); // Rotate around the z axis
+
+                    //3. translation/position
+                    //move our model to the correct place in the game world
+                    effect.World *= Matrix.CreateTranslation(position);
+
+                    //view matrix
+                    //this puts the model in relation to where our camera is, and the direction of our camera.
+                    effect.View = Matrix.CreateLookAt(cam.target + position, cam.target, Vector3.Up);
+
+                    //PROJECTION MATRIX
+                    //projection changes from view space (3D) to screen space (2D)
+                    //can be either orthographic or perspective.
+                    //perspective
+                    effect.Projection = Matrix.CreatePerspectiveFieldOfView(
+                        cam.fieldOfView,
+                        cam.aspectRatio,
+                        cam.nearPlane,
+                        cam.farPlane);
+
                     // the following effects are related to lighting and texture  settings, feel free to tweak them to see what happens.
                     effect.LightingEnabled = true;
                     effect.Alpha = Alpha; //  amount of transparency
