@@ -104,7 +104,7 @@ namespace Assessment
 
                     //view matrix
                     //this puts the model in relation to where our camera is, and the direction of our camera.
-                    effect.View = Matrix.CreateLookAt(cam.target + position, cam.target, Vector3.Up);
+                    effect.View = Matrix.CreateLookAt(cam.position, cam.target, Vector3.Up);
 
                     //PROJECTION MATRIX
                     //projection changes from view space (3D) to screen space (2D)
