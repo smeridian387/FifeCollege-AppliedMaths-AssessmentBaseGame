@@ -55,13 +55,31 @@ namespace Assessment
         {
             get
             {
-                BoundingBox b = new BoundingBox();
+                BoundingBox bbox = new BoundingBox();
                 ///////////////////////////////////////////////////////////////////
                 //
                 // CODE FOR TASK 3 SHOULD BE ENTERED HERE
                 //
+
+                //Find center first, by starting at the meshs world position
+                //then adding an offset if the meshs center also happens to be offset - scalled by meshs scale;
+
+                bbox.Min = position + mesh.Meshes[0].BoundingSphere.Center + new Vector3(0, 0, 10);
+
+                //Then move this center to the top left corner by subtracting half the size of the mesh
+                //Calculated by its radius and scaled by visual and collision scales
+
+                bbox.Min.X -= (mesh.Meshes[0].BoundingSphere.Radius) * collisionScale.X * scale;
+                bbox.Min.Y -= (mesh.Meshes[0].BoundingSphere.Radius) * collisionScale.Y * scale;
+                bbox.Min.Z -= (mesh.Meshes[0].BoundingSphere.Radius) * collisionScale.Z * scale;
+
+                //Find the max (the opposite corner) by adding on the mesh size, scaled
+                bbox.Max.X = bbox.Min.X + mesh.Meshes[0].BoundingSphere.Radius * 3 * collisionScale.X * scale;
+                bbox.Max.Y = bbox.Min.Y + mesh.Meshes[0].BoundingSphere.Radius * 2 * collisionScale.Y * scale;
+                bbox.Max.Z = bbox.Min.Z + mesh.Meshes[0].BoundingSphere.Radius * 3 * collisionScale.Z * scale;
+
                 ///////////////////////////////////////////////////////////////////
-                return b;
+                return bbox;
             }
         }
         internal void LoadModel(ContentManager content, string modelName)

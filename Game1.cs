@@ -69,7 +69,7 @@ namespace Assessment
             BoundingRenderer.InitializeGraphics(graphics.GraphicsDevice);
             spriteBatch = new SpriteBatch(GraphicsDevice);
             player.LoadModel(Content, "Ship");
-            player.rotation = new Vector3(1.5f, 0f, 0f);
+            player.rotation = new Vector3(0f, 0f, 0f);
             player.position.X = 0;
             player.position.Y = 0;
             player.position.Z = 0;
@@ -106,8 +106,8 @@ namespace Assessment
             sunlight.direction = Vector3.Normalize(new Vector3(1.5f, -1.5f, -1.5f));
         }
 
-        public enum IntegrationMethod { ForwardEuler, LeapFrog, Verlet };
-        IntegrationMethod currentIntegrationMethod = IntegrationMethod.ForwardEuler;
+        public enum IntegrationMethod { ForwardEuler, ImplicitEular, Verlet };
+        IntegrationMethod currentIntegrationMethod = IntegrationMethod.Verlet;
 
         private void MovePlayer(int dt)
         {
@@ -125,11 +125,18 @@ namespace Assessment
                 // CODE FOR TASK 2 SHOULD BE ENTERED HERE
                 //
                 ///////////////////////////////////////////////////////////////////
-                case IntegrationMethod.LeapFrog:
 
+                case IntegrationMethod.ImplicitEular:
+
+                    player.velocity += acceleration * (dt);
+                    player.position += player.velocity * dt;
 
                     break;
                 case IntegrationMethod.Verlet:
+
+                    Vector3 OldVel = player.velocity;
+                    player.velocity = player.velocity + acceleration * dt;
+                    player.position = player.position + (OldVel + player.velocity) * dt;
                     break;
             }
         }
@@ -163,8 +170,8 @@ namespace Assessment
             player.velocity *= 0.9f; // friction
             if (Keyboard.GetState().IsKeyDown(Keys.Up))
             {
-                acceleration.X = (float)Math.Sin(player.rotation.Y) * 0.001f;
-                acceleration.Z = (float)Math.Cos(player.rotation.Y) * 0.001f;
+                acceleration.X = (float)Math.Sin(player.rotation.Y) * -0.001f;
+                acceleration.Z = (float)Math.Cos(player.rotation.Y) * -0.001f;
             }
             // camera follow
             gamecam.position = new Vector3(50, 50, 50) + player.position;
@@ -186,13 +193,18 @@ namespace Assessment
                 rockFalling = true;
                 rock.velocity = new Vector3(0, 0.2f, 0);
             }
-            if (rockFalling)
+            if (rockFalling && rock.position.Y >= 0)
             {
                 Vector3 gravity = new Vector3(0, -0.01f, 0);
                 ///////////////////////////////////////////////////////////////////
                 //
                 // CODE FOR TASK 4 SHOULD BE ENTERED HERE
                 //
+                {
+                //float timeSinceFall = (float)gameTime.TotalGameTime.TotalSeconds - fallStart;
+                rock.position.Y += gravity.Y * dt * dt / 2f + rock.velocity.Y * dt;
+                rock.velocity.Y += gravity.Y;
+                }
                 ///////////////////////////////////////////////////////////////////
             }
             if (player.hitBox.Intersects(TriggerBoxDoorOpen))
@@ -208,6 +220,16 @@ namespace Assessment
                 //
                 // CODE FOR TASK 5 SHOULD BE ENTERED HERE
                 //
+                //get game time
+                doorSequenceTimer += gameTime.ElapsedGameTime.Milliseconds;
+                if (doorSequenceTimer >= doorSequenceFinalTime)
+                {
+                    //reset timer
+                    doorSequenceTimer = doorSequenceFinalTime;
+                }
+
+                newPos = CubicInterpolation(doorStartPoint, doorEndPoint, (float)doorSequenceTimer, (float)doorSequenceFinalTime);
+                door.SetUpVertices(newPos);
                 ///////////////////////////////////////////////////////////////////
             }
 
@@ -223,7 +245,6 @@ namespace Assessment
             //
             // CODE FOR TASK 7 SHOULD BE ENTERED HERE
             //
-            ///////////////////////////////////////////////////////////////////
             ///
             //need the perpendicular vector to the face of the box we hit
             //to do this, we need two vectors on the face of the box we hit
@@ -268,18 +289,39 @@ namespace Assessment
             //use this normal vector to reflect the player's velocity
             //this uses dot product equation internally
             player.velocity = Vector3.Reflect(player.velocity, normal);
+
+            ///////////////////////////////////////////////////////////////////
         }
         ///////////////////////////////////////////////////////////////////
         //
         // CODE FOR TASK 6 SHOULD BE ENTERED HERE
         //
-        ///////////////////////////////////////////////////////////////////
         public Vector3 CubicInterpolation(Vector3 initialPos, Vector3 endPos, float
-        time)
+        time, float duration)
         {
-            return new Vector3(0, 0, 0);
-        }
+            ///  // Calculate our independant variable time as a proportion (ratio) of time passed to the total duration
+            // (between 0 and 1)
 
+            float t = time / duration;
+
+            // Calculate p (position aka distance traveled from start)
+            // Using our derived cubic equation
+            // Produces a fraction of the complete distance (between 0 and 1)
+            // This is our scaling factor
+            float p = -2f * (t * t * t) + 3f * (t * t);
+
+            Vector3 totalDistance = endPos - initialPos;
+
+            // Determine the distance traveled (how far we have actually gone so far)
+            // By scaling the total distance by our generated scaling factor (p)
+            Vector3 distanceTraveled = totalDistance * p;
+
+            // Determine the new position by adding the distance traveled to the start point
+            Vector3 newPosition = initialPos + distanceTraveled;
+
+            return newPosition;
+        }
+        ///////////////////////////////////////////////////////////////////
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
