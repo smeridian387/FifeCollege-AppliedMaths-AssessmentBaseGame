@@ -191,7 +191,7 @@ namespace Assessment
             if (player.hitBox.Intersects(TriggerBoxRockFall) && !rockFalling)
             {
                 rockFalling = true;
-                rock.velocity = new Vector3(0, 0.2f, 0);
+                rock.velocity = new Vector3(0, 0f, 0);
             }
             if (rockFalling && rock.position.Y >= 0)
             {
