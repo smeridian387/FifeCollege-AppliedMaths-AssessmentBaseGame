@@ -106,19 +106,13 @@ namespace Assessment
             sunlight.direction = Vector3.Normalize(new Vector3(1.5f, -1.5f, -1.5f));
         }
 
-        public enum IntegrationMethod { ForwardEuler, ImplicitEular, Verlet };
-        IntegrationMethod currentIntegrationMethod = IntegrationMethod.Verlet;
-
+        public enum IntegrationMethod { ImplicitEular, Verlet};
+        IntegrationMethod currentIntegrationMethod = IntegrationMethod.ImplicitEular;
+        // dt is the current game time in milliseconds.
         private void MovePlayer(int dt)
         {
             switch (currentIntegrationMethod)
             {
-                case IntegrationMethod.ForwardEuler:
-                    //// This method is deprecated due to stability issues.
-                    player.position += player.velocity * dt;
-                    player.velocity += acceleration * dt;
-
-                    break;
 
                 ///////////////////////////////////////////////////////////////////
                 //
@@ -131,13 +125,15 @@ namespace Assessment
                     player.velocity += acceleration * (dt);
                     player.position += player.velocity * dt;
 
-                    break;
+                break;
+
                 case IntegrationMethod.Verlet:
 
-                    Vector3 OldVel = player.velocity;
+                    Vector3 oldVelocity = player.velocity;
                     player.velocity = player.velocity + acceleration * dt;
-                    player.position = player.position + (OldVel + player.velocity) * dt;
-                    break;
+                    player.position = player.position + (oldVelocity + player.velocity) * dt;
+
+                break;
             }
         }
 
@@ -191,7 +187,7 @@ namespace Assessment
             if (player.hitBox.Intersects(TriggerBoxRockFall) && !rockFalling)
             {
                 rockFalling = true;
-                rock.velocity = new Vector3(0, 0f, 0);
+                rock.velocity = new Vector3(0, 0, 0);
             }
             if (rockFalling && rock.position.Y >= 0)
             {
@@ -200,11 +196,11 @@ namespace Assessment
                 //
                 // CODE FOR TASK 4 SHOULD BE ENTERED HERE
                 //
-                {
-                //float timeSinceFall = (float)gameTime.TotalGameTime.TotalSeconds - fallStart;
+
+                
                 rock.position.Y += gravity.Y * dt * dt / 2f + rock.velocity.Y * dt;
                 rock.velocity.Y += gravity.Y;
-                }
+                
                 ///////////////////////////////////////////////////////////////////
             }
             if (player.hitBox.Intersects(TriggerBoxDoorOpen))

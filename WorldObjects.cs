@@ -61,8 +61,7 @@ namespace Assessment
                 // CODE FOR TASK 3 SHOULD BE ENTERED HERE
                 //
 
-                //Find center first, by starting at the meshs world position
-                //then adding an offset if the meshs center also happens to be offset - scalled by meshs scale;
+                //starting at the models world position then add an offset to center the bounding box.
 
                 bbox.Min = position + mesh.Meshes[0].BoundingSphere.Center + new Vector3(0, 0, 10);
 
