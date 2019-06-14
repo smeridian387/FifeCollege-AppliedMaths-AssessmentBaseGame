@@ -28,8 +28,10 @@ namespace Assessment
         Vector3 acceleration = new Vector3();
         basicCuboid door;
         basicCuboid[] walls = new basicCuboid[20];
-        int doorSequenceTimer;
-        int doorSequenceFinalTime = 2500;
+        int doorAnimationTimer;
+        int doorAnimationTimeFinished = 2500;
+        float rockFallStart;
+        int millisecondsSinceRockFall = 0;
 
         public Game1()
         {
@@ -191,16 +193,18 @@ namespace Assessment
             }
             if (rockFalling && rock.position.Y >= 0)
             {
-                Vector3 gravity = new Vector3(0, -0.01f, 0);
+                Vector3 gravity = new Vector3(0, -100, 0);
                 ///////////////////////////////////////////////////////////////////
                 //
                 // CODE FOR TASK 4 SHOULD BE ENTERED HERE
-                //
+                // 
+                Vector3 rockstartpos = new Vector3(25, 60, -50);
 
-                
-                rock.position.Y += gravity.Y * dt * dt / 2f + rock.velocity.Y * dt;
-                rock.velocity.Y += gravity.Y;
-                
+                millisecondsSinceRockFall += dt;
+                //float timeSinceRockFall = (float)gameTime.ElapsedGameTime.TotalSeconds - rockFallStart;
+                float timeSinceRockFall = ((float)millisecondsSinceRockFall) / 1000f;
+
+                rock.position.Y = (gravity.Y * timeSinceRockFall * timeSinceRockFall) / 2f + rockstartpos.Y;
                 ///////////////////////////////////////////////////////////////////
             }
             if (player.hitBox.Intersects(TriggerBoxDoorOpen))
@@ -209,23 +213,22 @@ namespace Assessment
             }
             if (doorOpening)
             {
-                Vector3 newPos = new Vector3();
-                Vector3 doorStartPoint = new Vector3(-70, 0, 0);
-                Vector3 doorEndPoint = new Vector3(-70, 30, 0);
+                Vector3 newPosition = new Vector3();
+                Vector3 doorClosed = new Vector3(-70, 0, 0);
+                Vector3 doorOpen = new Vector3(-70, 30, 0);
                 ///////////////////////////////////////////////////////////////////
                 //
                 // CODE FOR TASK 5 SHOULD BE ENTERED HERE
                 //
                 //get game time
-                doorSequenceTimer += gameTime.ElapsedGameTime.Milliseconds;
-                if (doorSequenceTimer >= doorSequenceFinalTime)
+                doorAnimationTimer += gameTime.ElapsedGameTime.Milliseconds;
+                if (doorAnimationTimer >= doorAnimationTimeFinished)
                 {
                     //reset timer
-                    doorSequenceTimer = doorSequenceFinalTime;
+                    doorAnimationTimer = doorAnimationTimeFinished;
                 }
-
-                newPos = CubicInterpolation(doorStartPoint, doorEndPoint, (float)doorSequenceTimer, (float)doorSequenceFinalTime);
-                door.SetUpVertices(newPos);
+                newPosition = CubicInterpolation(doorClosed, doorOpen, (float)doorAnimationTimer, (float)doorAnimationTimeFinished);
+                door.SetUpVertices(newPosition);
                 ///////////////////////////////////////////////////////////////////
             }
 
@@ -242,8 +245,8 @@ namespace Assessment
             // CODE FOR TASK 7 SHOULD BE ENTERED HERE
             //
             ///
-            //need the perpendicular vector to the face of the box we hit
-            //to do this, we need two vectors on the face of the box we hit
+            //we need the perpendicular vector to the face of the object we hit.
+            //in order to do this we need two vectors from the face we hit.
             Vector3 faceVector1;
             Vector3 facevector2;
 
@@ -277,7 +280,7 @@ namespace Assessment
             }
             //we ignore the posibility of a y direction 
 
-            //get a cron product between these two zectors to define a normal perpendicular to the plane
+            //get a cross product between these two zectors to define a normal perpendicular to the plane
             Vector3 normal = Vector3.Cross(faceVector1, facevector2);
             //make it a unit vector (length 1)
             normal.Normalize();
@@ -292,28 +295,26 @@ namespace Assessment
         //
         // CODE FOR TASK 6 SHOULD BE ENTERED HERE
         //
-        public Vector3 CubicInterpolation(Vector3 initialPos, Vector3 endPos, float
+        public Vector3 CubicInterpolation(Vector3 initialPosition, Vector3 endPosition, float
         time, float duration)
         {
             ///  // Calculate our independant variable time as a proportion (ratio) of time passed to the total duration
             // (between 0 and 1)
 
             float t = time / duration;
-
-            // Calculate p (position aka distance traveled from start)
-            // Using our derived cubic equation
-            // Produces a fraction of the complete distance (between 0 and 1)
-            // This is our scaling factor
+            
+            //using the derived cubic fuction that returns how far we are throught the transition from 0 to 1
+            //this fraction is our scaling factor
             float p = -2f * (t * t * t) + 3f * (t * t);
 
-            Vector3 totalDistance = endPos - initialPos;
+            Vector3 totalDistance = endPosition - initialPosition;
 
-            // Determine the distance traveled (how far we have actually gone so far)
-            // By scaling the total distance by our generated scaling factor (p)
+            // Calculate how far we have traveled
+            // multiply the total disatance we have to move by the scaling factor
             Vector3 distanceTraveled = totalDistance * p;
 
-            // Determine the new position by adding the distance traveled to the start point
-            Vector3 newPosition = initialPos + distanceTraveled;
+            // Calculate current position by adding the distance weve traveled to the position we started from
+            Vector3 newPosition = initialPosition + distanceTraveled;
 
             return newPosition;
         }
