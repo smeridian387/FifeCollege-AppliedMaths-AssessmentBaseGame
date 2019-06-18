@@ -286,7 +286,7 @@ namespace Assessment
             normal.Normalize();
 
             //use this normal vector to reflect the player's velocity
-            //this uses dot product equation internally
+            //this uses cross product equation internally
             player.velocity = Vector3.Reflect(player.velocity, normal);
 
             ///////////////////////////////////////////////////////////////////
