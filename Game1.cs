@@ -303,7 +303,6 @@ namespace Assessment
 
             float t = time / duration;
             
-            //using the derived cubic fuction that returns how far we are throught the transition from 0 to 1
             //this fraction is our scaling factor
             float p = -2f * (t * t * t) + 3f * (t * t);
 
